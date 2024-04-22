@@ -6,33 +6,6 @@ const axios = require('axios');
 const sharp = require('sharp');
 const Jimp = require('jimp');
 const { createWorker } = require('tesseract.js');
-// const timestamp = Date.now();
-// const nonce = (Number((Math.random() + Math.random()).toString().substr(2, 13)) + Date.now()).toString(36).slice(-parseInt(8, 10))
-// // const timestamp = 1713339162773
-// // const nonce = 'sf96p0it'
-// const t = {
-//     method: 'post',
-//     headers: {
-//         nonce,
-//         timestamp,
-
-//     },
-//     Authorization: '',
-//     queryString: JSON.stringify({
-//         // code: 'p210434036',
-//         // parkCode: '100019',
-//         oneId: 'oDJ04uCH2uyYC4PQqNXQNTEjuhRI'
-//     })
-// }
-// console.log('t.queryString',t.queryString);
-// let sign = ("".concat(t.method,'\n')
-//     .concat(t.headers.nonce,'\n')
-//     .concat(t.headers.timestamp,'\n')
-//     .concat("parking", '\n')
-//     .concat(t.queryString));
-// console.log(sign)
-// 将字符串转换成UTF8编码格式
-// sign = CryptoJS.enc.Utf8.parse(sign);
   var n = {
       utf8: {
           stringToBytes: function(t) {
@@ -276,31 +249,26 @@ let encryptedStr = ("".concat(t.method,'\n')
     let sign = bytesToHex(signlist)
     return {sign, timestamp, nonce, queryString}
 }
-// function setAxiosHeader(sign,timestamp,nonce,queryString) {
-//     const signlist = wordsToBytes(c(sign))
-// console.log('c(sign)',wordsToBytes(c(sign)));
-// 进行MD5加密
-// let encryptedStr = CryptoJS.MD5(sign).toString();
-// let encryptedStr = bytesToHex(signlist)
-// // console.log('encryptedStr', encryptedStr);
-// console.log('123456')
-// axios.interceptors.request.use(config => {
-//     // 在发送请求前，添加统一的请求头
+// 实时查询时间
+function getCurrentTime() {
+    const now = new Date();
+    const hours = now.getHours().toString().padStart(2, '0');
+    const minutes = now.getMinutes().toString().padStart(2, '0');
+    const seconds = now.getSeconds().toString().padStart(2, '0');
+    return `${hours}:${minutes}:${seconds}`;
+}
 
-//     config.headers['sign'] = encryptedStr;
-//     config.headers['nonce'] = nonce;
-//     config.headers['timestamp'] = timestamp;
-//     config.headers['x-appcode'] = 'parking';
-//     config.headers['Content-Type'] = 'application/json;charset=utf-8';
-//     config.headers['queryString'] = queryString
-//     console.log('aiaiai')
-//     console.log('config.headers',config.headers);
-//     return config;
-//   }, error => {
-//     // 处理请求错误
-//     return Promise.reject(error);
-//   });
-// }
+
+// 使用setInterval设置一个定时器，每秒钟更新一次时间
+setInterval(() => {
+    console.log(getCurrentTime());
+    if(getCurrentTime() === '13:46:00') {
+        checkReservation();
+        console.log('已到查询时间');
+    } else {
+        console.log('未到查询时间');
+    }
+}, 1000);
 // checkReservation()
 function checkReservation() {
    const {sign,timestamp,nonce,queryString} = generateSign (
@@ -330,7 +298,7 @@ function checkReservation() {
       })
 }
  
-getCode()
+// getCode()
 // 获取验证码
 function getCode() {
 
@@ -375,34 +343,6 @@ function getCode() {
             }); 
           }
     })
-//     axios.post('https://smartum.sz.gov.cn/tcyy/parking/lot-mobile/service-parking-mobile/webapi/parkInfo/getCode', {
-//     oneId:  'oDJ04uCH2uyYC4PQqNXQNTEjuhRI',
-//   })
-//     .then(response => {
-//     //   console.log(response.data);
-//       if(response.data && response.data.code ===0) {
-//         //   console.log('base64', response.data.data);
-//           const base64 = response.data.data;
-//             // 示例：降噪Sigma设为10
-//         blurBase64Image(base64, 2.38).then(blurredBase64 => {
-//             // console.log(blurredBase64); // 输出降噪后的Base64图片
-
-//             (async () => {
-//                 const worker = await createWorker('eng');
-//                 await worker.setParameters({
-//                     tessedit_char_whitelist: '0123456789',
-//                 })
-//                 const ret = await worker.recognize(blurredBase64);
-//                 console.log(ret.data.text);
-//                 await worker.terminate();
-//             })();
-
-//         }); 
-//       }
-//     })
-//     .catch(error => {
-//       console.log(error);
-// });
 }
 
 
@@ -457,12 +397,10 @@ function reservation(code) {
         'nonce':  nonce,
          queryString
     };
-    console.log('queryString',queryString);
-    console.log('dynamicHeaders',dynamicHeaders)
     sendRequest('https://smartum.sz.gov.cn/tcyy/parking/lot-mobile/service-parking-mobile/webapi/app/userReservationApp/reservation',params,dynamicHeaders).then(response => {
         console.log('response',response);
         if(response.code !== 0) {
-            // getCode
+            getCode()
         }
     })
 }
