@@ -5,6 +5,7 @@ const CryptoJS = require("crypto-js");
 const axios = require('axios');
 const sharp = require('sharp');
 const Jimp = require('jimp');
+const  Holidays   = require('date-holidays');
 const { createWorker } = require('tesseract.js');
   var n = {
       utf8: {
@@ -257,16 +258,75 @@ function getCurrentTime() {
     const seconds = now.getSeconds().toString().padStart(2, '0');
     return `${hours}:${minutes}:${seconds}`;
 }
-
-
+// 公共节假日
+var holidays = [
+    '2024-05-01', // 国庆
+    '2024-05-02', // 国庆
+    '2024-05-03', // 国庆
+    '2024-05-04', // 国庆
+    '2024-05-05', // 国庆
+    '2024-06-08', // 端午
+    '2024-06-09', // 端午
+    '2024-06-10', // 端午
+    '2024-09-15', // 中秋
+    '2024-09-16', // 中秋
+    '2024-09-17', // 中秋
+    '2024-10-01', // 国庆
+    '2024-10-02', // 国庆
+    '2024-10-03', // 国庆
+    '2024-10-04', // 国庆
+    '2024-10-05', // 国庆
+    '2024-10-06', // 国庆
+    '2024-10-07', // 国庆
+]
+// 调休上班时间
+const workdays = [
+    '2024-4-28',
+    '2024-5-11',
+    '2024-9-14',
+    '2024-9-29',
+    '2024-10-12',
+]
+function isholidays() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth() + 1; // getMonth() 返回的月份是从 0 开始的
+    const day = now.getDate();    
+    // console.log(`当前日期是：${year}-${month}-${day}`);
+    const date = `${year}-${month}-${day}`
+    if(holidays.includes(date)) return true
+    return false;
+}
+function isWorkdays() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth() + 1; // getMonth() 返回的月份是从 0 开始的
+    const day = now.getDate();    
+    // console.log(`当前日期是：${year}-${month}-${day}`);
+    const date = `${year}-${month}-${day}`
+    if(workdays.includes(date)) return true
+    return false;
+}
+function isWeekend() {
+    const date = new Date();
+    // 获取星期几 (0-6, 0是周日)
+    const day = date.getDay();
+    // 判断是否是周六或周日
+    return day === 6 || day === 0;
+}
 // 使用setInterval设置一个定时器，每秒钟更新一次时间
 setInterval(() => {
-    console.log(getCurrentTime());
-    if(getCurrentTime() === '13:46:00') {
-        checkReservation();
-        console.log('已到查询时间');
-    } else {
-        console.log('未到查询时间');
+    // console.log(getCurrentTime());
+    if(isWorkdays()) {
+        if(getCurrentTime() === '06:00:00') {
+            console.log('已到查询调休上班时间' + new Date());
+            checkReservation();       
+        }
+    } else if(!isholidays()) {
+        if(getCurrentTime() === '06:00:00' && (!isWeekend())) {
+            console.log('已到查询时间' +  + new Date());
+            checkReservation();       
+        }
     }
 }, 1000);
 // checkReservation()
@@ -324,7 +384,7 @@ function getCode() {
         if(response && response.code ===0) {
               console.log('base64', response.data);
               const base64 = response.data;
-                // 示例：降噪Sigma设为10
+                // 示例：降噪Sigma设为2.38
             blurBase64Image(base64, 2.38).then(blurredBase64 => {
                 // console.log(blurredBase64); // 输出降噪后的Base64图片
     
@@ -385,12 +445,11 @@ function getBookTime () {
     }
    return year + '-' + month + '-' + day + ' ' + hour + ':' + minute + ':' + '00';
 }
-getBookTime()
+// getBookTime()
 function reservation(code) {
     const bookTime = getBookTime()
     const params = {bookTime,carNo:'57KkQkdNNzkzMw==',code: 'p210434036',lineUpType: 0,oneId: 'oDJ04uCH2uyYC4PQqNXQNTEjuhRI',parkCode: '100019',phone: 'MTU5ODY3NTkxMzU=',spaceId: '2411287',spaceType: 0,'verificationCode':code}
     const {sign,timestamp,nonce,queryString} = generateSign(params)
-    console.log('queryString1111',queryString)
     const dynamicHeaders = {  
         'sign': sign,  
         'timestamp': timestamp,
