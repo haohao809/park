@@ -281,29 +281,29 @@ var holidays = [
 ]
 // 调休上班时间
 const workdays = [
-    '2024-4-28',
-    '2024-5-11',
-    '2024-9-14',
-    '2024-9-29',
+    '2024-04-28',
+    '2024-05-11',
+    '2024-09-14',
+    '2024-09-29',
     '2024-10-12',
 ]
+
+function dateToYYYYMMDD(date) {
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
 function isholidays() {
     const now = new Date();
-    const year = now.getFullYear();
-    const month = now.getMonth() + 1; // getMonth() 返回的月份是从 0 开始的
-    const day = now.getDate();    
-    // console.log(`当前日期是：${year}-${month}-${day}`);
-    const date = `${year}-${month}-${day}`
+    const date = dateToYYYYMMDD(now)
     if(holidays.includes(date)) return true
     return false;
 }
-function isWorkdays() {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = now.getMonth() + 1; // getMonth() 返回的月份是从 0 开始的
-    const day = now.getDate();    
+function isWorkdays() {  
     // console.log(`当前日期是：${year}-${month}-${day}`);
-    const date = `${year}-${month}-${day}`
+    const now = new Date();
+    const date = dateToYYYYMMDD(now)
     if(workdays.includes(date)) return true
     return false;
 }
@@ -314,17 +314,20 @@ function isWeekend() {
     // 判断是否是周六或周日
     return day === 6 || day === 0;
 }
+// console.log('isWorkdays()',isWorkdays());
+// console.log('isWeekend()',isWeekend());
+// console.log('isholidays()',isholidays());
 // 使用setInterval设置一个定时器，每秒钟更新一次时间
 setInterval(() => {
     // console.log(getCurrentTime());
     if(isWorkdays()) {
         if(getCurrentTime() === '06:00:00') {
-            console.log('已到查询调休上班时间' + new Date());
+            console.log('已到查询调休上班时间' + dateToYYYYMMDD(new Date()));
             checkReservation();       
         }
     } else if(!isholidays()) {
-        if(getCurrentTime() === '06:00:00' && (!isWeekend())) {
-            console.log('已到查询时间' +  + new Date());
+        if(getCurrentTime() === '06:00:00' && !isWeekend()) {
+            console.log('已到查询时间' + dateToYYYYMMDD(new Date()));
             checkReservation();       
         }
     }
@@ -459,7 +462,7 @@ function reservation(code) {
     sendRequest('https://smartum.sz.gov.cn/tcyy/parking/lot-mobile/service-parking-mobile/webapi/app/userReservationApp/reservation',params,dynamicHeaders).then(response => {
         console.log('response',response);
         if(response.code !== 0) {
-            getCode()
+            checkReservation()
         }
     })
 }
