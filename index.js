@@ -331,8 +331,40 @@ setInterval(() => {
             checkReservation();       
         }
     }
+    if(getCurrentTime() === '06:00:00' || getCurrentTime() === '06:01:00' || getCurrentTime() === '06:02:00' || getCurrentTime() === '06:02:00' || getCurrentTime() === '06:03:00' || getCurrentTime() === '06:04:00') {
+        parkDeil()
+    }    
 }, 1000);
 // checkReservation()
+
+function parkDeil() {
+    const {sign,timestamp,nonce,queryString} = generateSign (
+        {
+            latitude: 39.909187,
+            longitude: 116.397455,
+            parkCode: '100019',
+        }
+    )  
+    const dynamicHeaders = {  
+        'sign': sign,  
+        'timestamp': timestamp,
+        'nonce':  nonce,
+         queryString
+    }; 
+    sendRequest('https://smartum.sz.gov.cn/tcyy/parking/lot-mobile/service-parking-mobile/webapi/parkInfo/parkDetail',{
+        latitude: 39.909187,
+        longitude: 116.397455,
+        parkCode: '100019',
+      }, dynamicHeaders).then(response => {
+        // console.log('response',response)
+        if(response && response.code === 0) {
+            console.log('leftNum',response.data.fuelOilResidueNum);
+            const getCurrentTime =  new Date().toLocaleString().replace(/:\d{1,2}$/,' '); 
+            console.log('currentTime', getCurrentTime);
+        }
+      })
+}
+
 function checkReservation() {
    const {sign,timestamp,nonce,queryString} = generateSign (
             {
@@ -360,7 +392,6 @@ function checkReservation() {
         }
       })
 }
- 
 // getCode()
 // 获取验证码
 function getCode() {
