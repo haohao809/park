@@ -340,7 +340,7 @@ setInterval(() => {
     //     }
     // }
     if(isWorkdays() || (!isholidays() && !isWeekend())) {
-        if(getCurrentTime() === '05:49:00' || getCurrentTime() === '05:50:00' || getCurrentTime() === '05:51:00' || getCurrentTime() === '05:52:00' || getCurrentTime() === '05:53:00' || getCurrentTime() === '05:54:00' || getCurrentTime() === '05:55:00' || getCurrentTime() === '05:56:00' || getCurrentTime() === '05:57:00' || getCurrentTime() === '05:58:00' || getCurrentTime() === '05:59:00' || getCurrentTime() === '06:00:00' || getCurrentTime() === '06:01:00' || getCurrentTime() === '06:02:00' || getCurrentTime() === '06:03:00'){
+        if(getCurrentTime() === '05:49:30' || getCurrentTime() === '05:50:30' || getCurrentTime() === '05:51:30' || getCurrentTime() === '05:52:30' || getCurrentTime() === '05:53:30' || getCurrentTime() === '05:54:30' || getCurrentTime() === '05:55:30' || getCurrentTime() === '05:56:30' || getCurrentTime() === '05:57:30' || getCurrentTime() === '05:58:30' || getCurrentTime() === '05:59:30' || getCurrentTime() === '06:00:30' || getCurrentTime() === '06:01:30' || getCurrentTime() === '06:02:30' || getCurrentTime() === '06:03:30'){
             parkDeil()
         }  
     } 
@@ -349,13 +349,13 @@ setInterval(() => {
     } 
 }, 1000);
 // checkReservation()
-
+// parkDeil()
 function parkDeil() {
     const {sign,timestamp,nonce,queryString} = generateSign ( 
         {
-            latitude: 39.909187,
-            longitude: 116.397455,
-            parkCode: '100019',
+            latitude: 22.546769571848532,
+            longitude: 114.00684630460789,
+            parkCode: 'FT0001',
         }
     )  
     const dynamicHeaders = {  
@@ -365,15 +365,15 @@ function parkDeil() {
          queryString
     }; 
     sendRequest('https://smartum.sz.gov.cn/tcyy/parking/lot-mobile/service-parking-mobile/webapi/parkInfo/parkDetail',{
-        latitude: 39.909187,
-        longitude: 116.397455,
-        parkCode: '100019',
+        latitude: 22.546769571848532,
+        longitude: 114.00684630460789,
+        parkCode: 'FT0001',
       }, dynamicHeaders).then(response => {
         // console.log('response',response)
         if(response && response.code === 0) {
-            console.log('leftNum',response.data.fuelOilResidueNum);
+            console.log('XMleftNum',response.data.fuelOilResidueNum);
             const getCurrentTime =  new Date().toLocaleString(); 
-            console.log('currentTime', getCurrentTime);
+            console.log('XMcurrentTime', getCurrentTime);
             if(response.data.fuelOilResidueNum < 5 && response.data.fuelOilResidueNum > 0) {
                 checkReservation()
             }
@@ -384,8 +384,8 @@ function parkDeil() {
 function checkReservation() {
    const {sign,timestamp,nonce,queryString} = generateSign (
             {
-                code: 'p210434036',
-                parkCode: '100019',
+                code: 'DRZK20230630001',
+                parkCode: 'FT0001',
                 oneId: 'oDJ04uCH2uyYC4PQqNXQNTEjuhRI'
             }
         )  
@@ -397,8 +397,8 @@ function checkReservation() {
         };  
     // setAxiosHeader(sign,timestamp,nonce,queryString)
     sendRequest('https://smartum.sz.gov.cn/tcyy/parking/lot-mobile/service-parking-mobile/webapi/app/userReservationApp/checkReservation',{
-        code: 'p210434036',
-        parkCode: '100019',
+        code: 'DRZK20230630001',
+        parkCode: 'FT0001',
         oneId:  'oDJ04uCH2uyYC4PQqNXQNTEjuhRI',
       }, dynamicHeaders).then(response => {
         console.log('response',response)
@@ -498,7 +498,7 @@ function getBookTime () {
 // getBookTime()
 function reservation(code,lineUpType) {
     const bookTime = getBookTime()
-    const params = {bookTime,carNo:'57KkQkdNNzkzMw==',code: 'p210434036',lineUpType,oneId: 'oDJ04uCH2uyYC4PQqNXQNTEjuhRI',parkCode: '100019',phone: 'MTU5ODY3NTkxMzU=',spaceId: '2411287',spaceType: 0,'verificationCode':code}
+    const params = {bookTime,carNo:'57KkQkdNNzkzMw==',code: 'DRZK20230630001',lineUpType,oneId: 'oDJ04uCH2uyYC4PQqNXQNTEjuhRI',parkCode: 'FT0001',phone: 'MTU5ODY3NTkxMzU=',spaceId: '20009',spaceType: 0,'verificationCode':code}
     const {sign,timestamp,nonce,queryString} = generateSign(params)
     const dynamicHeaders = {  
         'sign': sign,  
