@@ -374,7 +374,7 @@ function parkDeil() {
             console.log('XMleftNum',response.data.fuelOilResidueNum);
             const getCurrentTime =  new Date().toLocaleString(); 
             console.log('XMcurrentTime', getCurrentTime);
-            if(response.data.fuelOilResidueNum < 5 && response.data.fuelOilResidueNum > 0) {
+            if(response.data.fuelOilResidueNum < 4 && response.data.fuelOilResidueNum > 0) {
                 checkReservation()
             }
         }

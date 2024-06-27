@@ -374,7 +374,7 @@ function parkDeil() {
             console.log('leftNum',response.data.fuelOilResidueNum);
             const getCurrentTime =  new Date().toLocaleString(); 
             console.log('currentTime', getCurrentTime);
-            if(response.data.fuelOilResidueNum < 5 && response.data.fuelOilResidueNum > 0) {
+            if(response.data.fuelOilResidueNum < 4 && response.data.fuelOilResidueNum > 0) {
                 checkReservation()
             }
         }
@@ -509,7 +509,12 @@ function reservation(code,lineUpType) {
     sendRequest('https://smartum.sz.gov.cn/tcyy/parking/lot-mobile/service-parking-mobile/webapi/app/userReservationApp/reservation',params,dynamicHeaders).then(response => {
         console.log('response',response);
         if(response.code !== 0 && response.code !== -10002) {
-            checkReservation()
+            if(response.code === -1 && response.msg.includes('预约提示:当前车辆已预约')) {
+                console.log('预约成功');
+            } else {
+                checkReservation()
+            }
+            
         } else if(response.code == -10002) {
             console.log('进入候补');
             reservation(code,1)
