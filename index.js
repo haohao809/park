@@ -191,29 +191,30 @@ const bytesToHex = function(t) {
     return e.join("")
 }
 
-function sendRequest(url, data, headers) {  
+async function sendRequest(url, data={}, headers={}) {  
     // 创建axios请求配置对象  
-    const requestConfig = {  
-      method: 'post', // 请求方法，如 'get', 'post' 等  
-      url, // 请求的URL  
-      data, // 请求体数据，如果是GET请求可以省略  
-      headers: {  
-        ...headers, // 展开传入的动态请求头  
+    const requestHeaders = {
         'Content-Type': 'application/json;charset=utf-8',
-        'x-appcode': 'parking'
-        // 可以添加默认请求头，如果传入headers中没有的话  
-        // 你可以在这里添加更多默认请求头，除非它们被传入的headers覆盖  
-      },  
-      // 可以添加其他axios配置选项，如timeout, baseURL等  
-    };
-  // 发送请求并返回Promise  
-  return axios(requestConfig)  
-    .then(response => {  
-      return response.data; // 或者你可以返回整个response对象  
-    })  
-    .catch(error => {  
-      throw error; // 或者你可以对错误进行更复杂的处理  
-    });  
+        'x-appcode': 'parking',
+        ...headers
+      };
+    
+      // 创建axios请求配置对象
+      const requestConfig = {
+        method: 'post',
+        url,
+        data,
+        headers: requestHeaders,
+      };
+    // 发送请求并返回Promise  
+    try {
+        // 发送请求并等待响应
+        const response = await axios(requestConfig);
+        return response.data; // 返回响应数据
+    } catch (error) {
+        // 错误处理
+        throw error; // 抛出错误
+    } 
 } 
 
 
@@ -240,7 +241,6 @@ const t = {
     })
 }
 const queryString = t.queryString
-console.log('queryString000',queryString)
 let encryptedStr = ("".concat(t.method,'\n')
     .concat(t.headers.nonce,'\n')
     .concat(t.headers.timestamp,'\n')
@@ -259,7 +259,7 @@ function getCurrentTime() {
     return `${hours}:${minutes}:${seconds}`;
 }
 // 公共节假日
-var holidays = [
+var holidays = new Set( [
     '2024-05-01', // 国庆
     '2024-05-02', // 国庆
     '2024-05-03', // 国庆
@@ -278,15 +278,15 @@ var holidays = [
     '2024-10-05', // 国庆
     '2024-10-06', // 国庆
     '2024-10-07', // 国庆
-]
+])
 // 调休上班时间
-const workdays = [
+const workdays = new Set([
     '2024-04-28',
     '2024-05-11',
     '2024-09-14',
     '2024-09-29',
     '2024-10-12',
-]
+])
 
 function dateToYYYYMMDD(date) {
     const year = date.getFullYear();
@@ -297,14 +297,14 @@ function dateToYYYYMMDD(date) {
 function isholidays() {
     const now = new Date();
     const date = dateToYYYYMMDD(now)
-    if(holidays.includes(date)) return true
+    if(holidays.has(date)) return true
     return false;
 }
 function isWorkdays() {  
     // console.log(`当前日期是：${year}-${month}-${day}`);
     const now = new Date();
     const date = dateToYYYYMMDD(now)
-    if(workdays.includes(date)) return true
+    if(workdays.has(date)) return true
     return false;
 }
 function isWeekend() {
@@ -314,43 +314,54 @@ function isWeekend() {
     // 判断是否是周六或周日
     return day === 6 || day === 0;
 }
+// 判断周几
+function getDayOfWeek() {
+    const date = new Date();
+    // 获取星期几 (0-6, 0是周日)
+    const day = date.getDay();
+    return day
+}
 // console.log('isWorkdays()',isWorkdays());
 // console.log('isWeekend()',isWeekend());
 // console.log('isholidays()',isholidays());
-const hours = ['00:00:00','01:00:00',
+const hours = new Set(['00:00:00','01:00:00',
     '02:00:00','03:00:00','04:00:00','05:00:00',
     '06:00:00','07:00:00','08:00:00','09:00:00',
     '10:00:00','11:00:00','12:00:00','13:00:00',
     '14:00:00','15:00:00','16:00:00','17:00:00',
     '18:00:00','19:00:00','20:00:00','21:00:00',
     '22:00:00','23:00:00'
-]
+])
+const reservationTime = new Set(['07:03:00','07:04:00','07:05:00','07:06:00',
+    '07:07:00', '07:08:00','07:09:00','07:09:30','07:10:00','07:10:30','07:11:00',
+    '07:11:30','07:12:00','07:12:30','07:13:00','07:13:30','07:14:00','07:14:30',
+    '07:15:00','07:15:30','07:16:00','07:16:30','07:17:00','07:17:30','07:18:00',
+    '07:18:30','07:19:00','07:19:30','07:20:00','07:20:30','07:21:00','07:21:30',
+    '07:22:00','07:23:00','07:24:00','07:25:00','07:26:00','07:27:00','07:28:00',
+    '07:29:00','07:30:00','07:31:00','07:32:00','07:33:00','07:34:00','07:35:00'
+])
 // 使用setInterval设置一个定时器，每秒钟更新一次时间
-setInterval(() => {
-    // console.log(getCurrentTime());
-    // if(isWorkdays()) {
-    //     if(getCurrentTime() === '05:58:00') {
-    //         console.log('已到查询调休上班时间' + dateToYYYYMMDD(new Date()));
-    //         checkReservation();       
-    //     }
-    // } else if(!isholidays()) {
-    //     if(getCurrentTime() === '05:58:00' && !isWeekend()) {
-    //         console.log('已到查询时间' + dateToYYYYMMDD(new Date()));
-    //         checkReservation();       
-    //     }
-    // }
+var flag = false;
+setInterval(() => { 
+    const currentTime = getCurrentTime()
     if(isWorkdays() || (!isholidays() && !isWeekend())) {
-        if(getCurrentTime() === '05:49:00' || getCurrentTime() === '05:50:00' || getCurrentTime() === '05:51:00' || getCurrentTime() === '05:52:00' || getCurrentTime() === '05:53:00' || getCurrentTime() === '05:54:00' || getCurrentTime() === '05:55:00' || getCurrentTime() === '05:56:00' || getCurrentTime() === '05:57:00' || getCurrentTime() === '05:58:00' || getCurrentTime() === '05:59:00' || getCurrentTime() === '06:00:00' || getCurrentTime() === '06:01:00' || getCurrentTime() === '06:02:00' || getCurrentTime() === '06:03:00'){
-            parkDeil()
-        }  
+        if(!flag) {
+            if(reservationTime.has(currentTime)) {
+                parkDeil()  
+                console.log('flag',flag, currentTime);             
+          } 
+        }
     } 
-    if(hours.includes(getCurrentTime())) {
-        console.log('已到查询时间' + getCurrentTime());
-    } 
-}, 1000);
-// checkReservation()
+    if(hours.has(currentTime)) {
+        console.log('已到查询时间' + currentTime);
+        if(currentTime === '00:00:00') {
+            flag = false;
+        }
+    }
+    getCode()
+}, 10000);
 
-function parkDeil() {
+async function parkDeil() {
     const {sign,timestamp,nonce,queryString} = generateSign ( 
         {
             latitude: 39.909187,
@@ -364,24 +375,28 @@ function parkDeil() {
         'nonce':  nonce,
          queryString
     }; 
-    sendRequest('https://smartum.sz.gov.cn/tcyy/parking/lot-mobile/service-parking-mobile/webapi/parkInfo/parkDetail',{
-        latitude: 39.909187,
-        longitude: 116.397455,
-        parkCode: '100019',
-      }, dynamicHeaders).then(response => {
-        // console.log('response',response)
-        if(response && response.code === 0) {
-            console.log('leftNum',response.data.fuelOilResidueNum);
-            const getCurrentTime =  new Date().toLocaleString(); 
-            console.log('currentTime', getCurrentTime);
-            if(response.data.fuelOilResidueNum < 4 && response.data.fuelOilResidueNum > 0) {
+    try {
+        const response = await sendRequest('https://smartum.sz.gov.cn/tcyy/parking/lot-mobile/service-parking-mobile/webapi/parkInfo/parkDetail',{
+            latitude: 39.909187,
+            longitude: 116.397455,
+            parkCode: '100019',
+          }, dynamicHeaders)
+          if(response && response.code === 0) {
+            const leftNum = response.data.fuelOilResidueNum
+            console.log('leftNum',leftNum);
+            console.log('currentTime',getCurrentTime());
+            if(leftNum > 0 && leftNum < 5) {
                 checkReservation()
             }
         }
-      })
+    } catch (error) {
+        throw('parkDeilError',error)
+    }
+
+
 }
 
-function checkReservation() {
+async function checkReservation() {
    const {sign,timestamp,nonce,queryString} = generateSign (
             {
                 code: 'p210434036',
@@ -394,23 +409,29 @@ function checkReservation() {
             'timestamp': timestamp,
             'nonce':  nonce,
              queryString
-        };  
-    // setAxiosHeader(sign,timestamp,nonce,queryString)
-    sendRequest('https://smartum.sz.gov.cn/tcyy/parking/lot-mobile/service-parking-mobile/webapi/app/userReservationApp/checkReservation',{
-        code: 'p210434036',
-        parkCode: '100019',
-        oneId:  'oDJ04uCH2uyYC4PQqNXQNTEjuhRI',
-      }, dynamicHeaders).then(response => {
-        console.log('response',response)
-        if(response && response.code === 0) {
-            console.log('success');
-            getCode()
-        }
-      })
+        };      
+    try {
+        const response = await sendRequest('https://smartum.sz.gov.cn/tcyy/parking/lot-mobile/service-parking-mobile/webapi/app/userReservationApp/checkReservation',{
+            code: 'p210434036',
+            parkCode: '100019',
+            oneId:  'oDJ04uCH2uyYC4PQqNXQNTEjuhRI',
+          }, dynamicHeaders)
+          console.log('response',response)
+          if(response && response.code === 0) {
+              console.log('success');
+              flag = true
+              console.log('flagCheck',flag, getCurrentTime());
+              getCode()
+          } 
+    } catch (error) {
+        throw('checkReservationError',error);
+    }
+
+
 }
 // getCode()
 // 获取验证码
-function getCode() {
+async function getCode() {
 
     const {sign,timestamp,nonce,queryString} = generateSign (
         {
@@ -423,36 +444,52 @@ function getCode() {
         'nonce':  nonce,
          queryString
     };
-    // console.log('queryString',queryString);
-    // if(!queryString.code) {
-    //     setAxiosHeader(sign,timestamp,nonce,queryString)
-    // }
-    sendRequest('https://smartum.sz.gov.cn/tcyy/parking/lot-mobile/service-parking-mobile/webapi/parkInfo/getCode',{
-        oneId:  'oDJ04uCH2uyYC4PQqNXQNTEjuhRI',
-      },dynamicHeaders).then(response => {
-        // console.log('response',response);
+    try {
+        const response =  await sendRequest('https://smartum.sz.gov.cn/tcyy/parking/lot-mobile/service-parking-mobile/webapi/parkInfo/getCode',{
+            oneId:  'oDJ04uCH2uyYC4PQqNXQNTEjuhRI',
+        },dynamicHeaders)
         if(response && response.code ===0) {
-              console.log('base64', response.data);
-              const base64 = response.data;
-                // 示例：降噪Sigma设为2.38
-            blurBase64Image(base64, 2.38).then(blurredBase64 => {
-                // console.log(blurredBase64); // 输出降噪后的Base64图片
-    
-                (async () => {
-                    const worker = await createWorker('eng');
-                    await worker.setParameters({
-                        tessedit_char_whitelist: '0123456789',
-                    })
-                    const ret = await worker.recognize(blurredBase64);
-                    console.log(ret.data.text);
-                    await worker.terminate();
-                    const verificationCode = ret.data.text;
-                    reservation(String(verificationCode).trim(),0)
-                })();
-    
-            }); 
-          }
-    })
+            const base64 = response.data;
+            console.log('base64', base64);
+          processBase64Image(base64, 2.38);
+          async function processBase64Image(base64, threshold) {  
+            try {  
+                // 模糊图片  
+                    const blurredBase64 = await blurBase64Image(base64, threshold);  
+                    // console.log(blurredBase64); // 输出降噪后的Base64图片  
+            
+                    // 创建OCR工作线程  
+                    const worker = await createWorker('eng');  
+                    // 设置OCR参数  
+                    await worker.setParameters({  
+                        tessedit_char_whitelist: '0123456789',  
+                    });  
+            
+                    // 使用OCR识别图片  
+                    const result = await worker.recognize(blurredBase64);  
+                    const text = result.data.text;  
+                    console.log('getCode',text);  
+                    // 清理OCR工作线程  
+                    await worker.terminate();  
+            
+                    // 验证验证码  
+                    const verificationCode = text.trim();  
+                  //  验证码有效，执行后续操作  
+                       if(String(verificationCode).replace(/\s*/g,'').length !== 4) {
+                          getCode()
+                      } else {
+                          reservation(String(verificationCode).trim(),0)
+                      }                  
+                } catch (error) {  
+                    console.error('处理图片时发生错误:', error);  
+                    getCode()
+                }  
+            } 
+        }
+    } catch (error) {
+        console.error('getCode发生错误:', error);  
+        getCode()
+    }
 }
 
 
@@ -477,7 +514,7 @@ function getBookTime () {
     var year = now.getFullYear();
     var month = now.getMonth() + 1; // 月份从0开始，所以要加1
     var day = now.getDate();
-    var hour = now.getHours() + 2;
+    var hour = now.getHours() + 1;
     var minute = now.getMinutes();
     // var second = now.getSeconds();
     // console.log(year, month, day, hour, minute, second);
@@ -496,7 +533,7 @@ function getBookTime () {
    return year + '-' + month + '-' + day + ' ' + hour + ':' + minute + ':' + '00';
 }
 // getBookTime()
-function reservation(code,lineUpType) {
+async function reservation(code,lineUpType) {
     const bookTime = getBookTime()
     const params = {bookTime,carNo:'57KkQkdNNzkzMw==',code: 'p210434036',lineUpType,oneId: 'oDJ04uCH2uyYC4PQqNXQNTEjuhRI',parkCode: '100019',phone: 'MTU5ODY3NTkxMzU=',spaceId: '2411287',spaceType: 0,'verificationCode':code}
     const {sign,timestamp,nonce,queryString} = generateSign(params)
@@ -506,18 +543,20 @@ function reservation(code,lineUpType) {
         'nonce':  nonce,
          queryString
     };
-    sendRequest('https://smartum.sz.gov.cn/tcyy/parking/lot-mobile/service-parking-mobile/webapi/app/userReservationApp/reservation',params,dynamicHeaders).then(response => {
-        console.log('response',response);
-        if(response.code !== 0 && response.code !== -10002) {
-            if(response.code === -1 && response.msg.includes('预约提示:当前车辆已预约')) {
-                console.log('预约成功');
-            } else {
-                checkReservation()
-            }
-            
-        } else if(response.code == -10002) {
-            console.log('进入候补');
-            reservation(code,1)
-        }
-    })
+    const response = await sendRequest('https://smartum.sz.gov.cn/tcyy/parking/lot-mobile/service-parking-mobile/webapi/app/userReservationApp/reservation',params,dynamicHeaders)
+    console.log('reservation.response',response);
+    if(response.code === 0) {
+        console.log('预约成功');
+    }
+    if(response.code !== 0 && response.code !== -10002) {
+        if(response.msg.indexOf('当前车辆已预约') >= 0) {
+            console.log('已预约成功');
+        } else {
+            checkReservation()
+        }                
+    } else if(response.code == -10002) {
+        console.log('进入候补');
+        reservation(code,1)
+    }
+
 }
